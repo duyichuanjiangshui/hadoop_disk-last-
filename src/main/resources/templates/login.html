@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>登录</title>
+    <link rel="stylesheet" href="../static/layui-v2.2.5/css/layui.css" media="all"/>
+    <link rel="stylesheet" href="../static/css/login.css"/>
+</head>
+
+<body  background="../static/images/login-bg1.jpg" style="background-repeat: no-repeat;background-size: 100% 100%;background-attachment: fixed">
+<div class="login-container">
+    <div class="beg-login-box" style="background-color: dimgrey" >
+        <header>
+        <h1>登录云盘</h1>
+        </header>
+        <div class="beg-login-main">
+            <form class="layui-form" onsubmit="return false">
+                <div class="layui-form-item">
+                    <label class="beg-login-icon">
+                        <i class="layui-icon">&#xe612;</i>
+                    </label>
+                    <input type="text" id="userName" name="name" autocomplete="off" lay-verify="required"
+                           placeholder="这里输入登录名或者邮箱号" class="layui-input">
+                </div>
+                <div class="layui-form-item">
+                    <label class="beg-login-icon">
+                        <i class="layui-icon">&#xe642;</i>
+                    </label>
+                    <input type="password" name="password" lay-verify="password" autocomplete="off"
+                        id="userPass"   placeholder="这里输入密码" class="layui-input">
+                </div>
+                <div class="layui-form-item">
+                    <div id="slider"></div>
+                </div>
+
+                <div class="layui-form-item">
+                    <div class="beg-pull-left beg-login-remember">
+                        <a href="/hadoop/index/forgetpassword"><label style="color: whitesmoke;">忘记密码？</label> </a>
+                    </div>
+                    <div class="beg-pull-left beg-login-remember">
+                        <a href="/hadoop/index/register" ><label style="color: whitesmoke;"> 注册</label> </a>
+                    </div>
+                    <div class="beg-pull-right">
+                        <button class="layui-btn layui-btn-primary" lay-submit lay-filter="login" id="loginbtn">
+                            <i class="layui-icon">&#xe650;</i> 登录
+                        </button>
+                    </div>
+                    <div class="beg-clear"></div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="../static/layui-v2.2.5/layui.all.js"></script>
+<script>
+    layui.config({
+        base: "../static/layui-v2.2.5/lay/mymodules/"
+    }).use(['layer', 'sliderVerify', 'form'], function () {
+        var sliderVerify = layui.sliderVerify;
+        var layer = layui.layer,
+            $ = layui.jquery;
+        $("#loginbtn").click(function () {
+            if ($.trim($('#userName').val()) == "" || $('#userPass').val() == "") {
+                layer.msg("用户名密码不能为空", {icon: 5})
+                return false
+            }
+        });
+        var slider = sliderVerify.render({
+            elem: '#slider',
+            onOk: function () {//当验证通过回调
+                layer.msg("滑块验证通过");
+            }
+        });
+        var form = layui.form;
+
+        //
+        //监听提交
+        form.on('submit(login)', function (data) {
+            if (slider.isOk()) {
+                console.log(data.field);
+
+                $.ajax({
+                    type: "POST",
+                    url: 'http://localhost:8000/hadoop/user/login',
+                    contentType: "application/json;charset=utf-8",
+                    data: JSON.stringify(data.field),
+                    dataType: "json",
+                    success: function (result) {
+                        if (result.code !=0) {
+                            var message = result.message;
+                            console.log(message);
+                            layer.msg(message, {offset: '15px', icon: 2, time: 1000}, function () {
+
+                            });
+                        } else {
+                            layer.msg('登入成功', {offset: '15px', icon: 1, time: 1000}, function () {
+                                location.href = "/hadoop/index/mainindex"; //后台主页
+                            });
+                        }
+                    }
+                })
+
+            } else {
+                layer.msg("请先通过滑块验证");
+            }
+        });
+    });
+</script>
+</body>
+
+</html>
